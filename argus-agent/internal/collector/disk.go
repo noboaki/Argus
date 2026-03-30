@@ -6,11 +6,11 @@ import (
 	"github.com/shirou/gopsutil/v4/disk"
 )
 
-type DiskUsage struct {
+type DiskCollector struct {
 	Path string
 }
 
-func (d *DiskUsage) Collect() (float64, error) {
+func (d *DiskCollector) Collect() (float64, error) {
 	path := d.Path
 	if path == "" {
 		path = "/"
@@ -23,6 +23,6 @@ func (d *DiskUsage) Collect() (float64, error) {
 	return stat.UsedPercent, nil
 }
 
-func (d *DiskUsage) Name() string {
+func (d *DiskCollector) Name() string {
 	return "disk"
 }

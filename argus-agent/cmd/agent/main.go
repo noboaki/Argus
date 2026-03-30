@@ -1,21 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/noboaki/argus-agent/internal/collector"
+	"github.com/noboaki/argus-agent/internal/sender"
 )
 
 func main() {
-	cpu := &collector.CPUCollector{}
-	memory := &collector.MemCollector{}
-	disk := &collector.DiskUsage{}
+	s, err := sender.New("localhost:50051")
+	if err != nil {
+		log.Fatalf("failed to connect: %v", err)
+	}
 
-	collectors := []collector.Collector{cpu, memory, disk}
+	collectors := []collector.Collector{
+		&collector.CPUCollector{},
+		&collector.MemCollector{},
+		&collector.DiskCollector{},
+	}
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	log.Println("Argus Agent started. Collecting Metrics every 1s...")
@@ -29,7 +34,6 @@ func main() {
 				log.Printf("[%s] error: %v", c.Name(), err)
 				continue
 			}
-
 			switch c.Name() {
 			case "cpu":
 				metrics.CPUUsage = val
@@ -40,11 +44,8 @@ func main() {
 			}
 		}
 
-		fmt.Printf("[%s] CPU: %.1f%%  MEM: %.1f%%  DISK: %.1f%%\n",
-			metrics.Timestamp.Format("2006-01-02T15:04:05.999999-07:00"),
-			metrics.CPUUsage,
-			metrics.MemUsage,
-			metrics.DiskUsage,
-		)
+		if err := s.Send(metrics); err != nil {
+			log.Printf("send error: %v", err)
+		}
 	}
 }
