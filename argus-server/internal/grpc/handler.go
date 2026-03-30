@@ -48,8 +48,9 @@ func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) 
 			continue
 		}
 
-		log.Printf("[%s] CPU: %.1f%%  MEM: %.1f%%  DISK: %.1f%%",
+		log.Printf("Agent_ID: [%s]  Hostname: [%s]  CPU: %.1f%%  MEM: %.1f%%  DISK: %.1f%%",
 			payload.AgentId,
+			payload.Hostname,
 			payload.CpuUsage,
 			payload.MemUsage,
 			payload.DiskUsage,
