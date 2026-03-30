@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package argus;
+
+option go_package = "argus/proto";
+
+service MetricService {
+  rpc StreamMetrics(stream MetricPayload) returns (Ack);
+}
+
+message MetricPayload {
+  string agent_id  = 1;
+  string hostname  = 2;
+  int64  timestamp = 3;  // Unix timestamp
+  double cpu_usage  = 4;
+  double mem_usage  = 5;
+  double disk_usage = 6;
+}
+
+message Ack {
+  bool   success = 1;
+  string message = 2;
+}
