@@ -3,11 +3,9 @@ LABEL authors="noboaki"
 
 WORKDIR /app
 
-COPY go.work go.work.sum ./
 COPY /proto ./proto
 COPY /argus-agent ./argus-agent
 
-RUN go work sync
 RUN go build -o argus-agent ./argus-agent/cmd/agent/
 
 FROM alpine:3.23
