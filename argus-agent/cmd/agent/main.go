@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/noboaki/argus-agent/internal/collector"
@@ -9,7 +10,12 @@ import (
 )
 
 func main() {
-	s, err := sender.New("localhost:50051")
+	serverAddr := os.Getenv("ARGUS_SERVER_ADDR")
+	if serverAddr == "" {
+		serverAddr = "localhost:50051"
+	}
+
+	s, err := sender.New(serverAddr)
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}

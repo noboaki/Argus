@@ -9,8 +9,7 @@ RUN go mod download
 COPY argus-server .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -o /app/argus-server ./cmd/server/
-
+    go build -o /out/argus-server ./cmd/server
 
 FROM alpine:3.23
 
@@ -18,11 +17,11 @@ WORKDIR /app
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=builder /app/argus-server .
+COPY --from=builder /out/argus-server /app/argus-server
 
 RUN adduser -D appuser
 USER appuser
 
 EXPOSE 50051
 
-ENTRYPOINT ["./argus-server"]
+ENTRYPOINT ["/app/argus-server"]
