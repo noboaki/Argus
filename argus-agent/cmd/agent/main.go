@@ -23,7 +23,7 @@ func main() {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	log.Println("Argus Agent started. Collecting Metrics every 1s...")
+	log.Printf("Argus Agent %s started. Collecting Metrics every 5s...", s.AgentID())
 
 	for range ticker.C {
 		metrics := collector.Metrics{Timestamp: time.Now()}

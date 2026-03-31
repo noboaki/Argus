@@ -33,9 +33,16 @@ func New(serverAddr string) (*GRPCSender, error) {
 
 	return &GRPCSender{
 		stream:   stream,
-		agentID:  hostname,
+		agentID:  resolveAgentID(hostname),
 		hostname: hostname,
 	}, nil
+}
+
+func resolveAgentID(hostname string) string {
+	if id := os.Getenv("ARGUS_AGENT_ID"); id != "" {
+		return id
+	}
+	return hostname
 }
 
 func (s *GRPCSender) Send(metrics collector.Metrics) error {
@@ -48,4 +55,8 @@ func (s *GRPCSender) Send(metrics collector.Metrics) error {
 		DiskUsage: metrics.DiskUsage,
 	}
 	return s.stream.Send(payload)
+}
+
+func (s *GRPCSender) AgentID() string {
+	return s.agentID
 }

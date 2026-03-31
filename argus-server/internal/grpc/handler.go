@@ -19,33 +19,61 @@ func NewHandler(store store.Store) *Handler {
 }
 
 func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) error {
+	var agentID string
+
+	defer func() {
+		if agentID != "" {
+			if err := h.store.UnregisterAgent(agentID); err != nil {
+				log.Printf("[%s] unregister error: %v", agentID, err)
+			}
+			log.Printf("[%s] disconnected", agentID)
+		}
+	}()
+
 	for {
 		payload, err := stream.Recv()
 
 		// Agent가 정상적으로 Stream을 종료했을 경우
 		if err == io.EOF {
-			return stream.SendAndClose(&proto.Ack{
-				Success: true,
-				Message: "stream successfully closed.",
-			})
+			return stream.SendAndClose(&proto.Ack{Success: true})
 		}
 
 		if err != nil {
 			return err
 		}
 
-		metric := store.Metric{
-			AgentID:   payload.AgentId,
-			Hostname:  payload.Hostname,
+		if agentID == "" {
+			agentID = payload.AgentId
+			if err := h.store.RegisterAgent(store.AgentInfo{
+				AgentMetadata: store.AgentMetadata{
+					AgentID:  payload.AgentId,
+					Hostname: payload.Hostname,
+				},
+				ConnectedAt: time.Now(),
+				LastSeenAt:  time.Now(),
+				IsOnline:    true,
+			}); err != nil {
+				log.Printf("[%s] register error: %v", payload.AgentId, err)
+			}
+			log.Printf("[%s] connected (hostname: %s)", payload.AgentId, payload.Hostname)
+		}
+
+		if err := h.store.Save(store.Metric{
+			AgentMetadata: store.AgentMetadata{
+				AgentID:  payload.AgentId,
+				Hostname: payload.Hostname,
+			},
 			Timestamp: time.Unix(payload.Timestamp, 0),
 			CPUUsage:  payload.CpuUsage,
 			MemUsage:  payload.MemUsage,
 			DiskUsage: payload.DiskUsage,
+		}); err != nil {
+			log.Printf("[%s] save error: %v", payload.AgentId, err)
+			continue
 		}
 
-		if err := h.store.Save(metric); err != nil {
-			log.Printf("store error: %v", err)
-			continue
+		if err := h.store.UpdateLastSeen(payload.AgentId); err != nil {
+			log.Printf("[%s] update last seen error: %v", payload.AgentId, err)
 		}
 
 		log.Printf("Agent_ID: [%s]  Hostname: [%s]  CPU: %.1f%%  MEM: %.1f%%  DISK: %.1f%%",
