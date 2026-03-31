@@ -2,7 +2,10 @@ module github.com/noboaki/argus-server
 
 go 1.24.0
 
-require google.golang.org/grpc v1.79.3
+require (
+	argus/proto v0.0.0-00010101000000-000000000000
+	google.golang.org/grpc v1.79.3
+)
 
 require (
 	golang.org/x/net v0.48.0 // indirect

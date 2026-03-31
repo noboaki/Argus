@@ -3,6 +3,7 @@ module github.com/noboaki/argus-agent
 go 1.24.0
 
 require (
+	argus/proto v0.0.0-00010101000000-000000000000
 	github.com/shirou/gopsutil/v4 v4.26.2
 	google.golang.org/grpc v1.79.3
 )
