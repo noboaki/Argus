@@ -1,0 +1,18 @@
+services:
+  argus-agent:
+    build:
+      context: .
+      dockerfile: argus-agent/Dockerfile
+    environment:
+      - ARGUS_SERVER_ADDR=argus-server:50051
+      - ARGUS_AGENT_ID=agent-local-1
+    depends_on:
+      - argus-server
+    container_name: argus-agent
+  argus-server:
+    build:
+      context: .
+      dockerfile: argus-server/Dockerfile
+    ports:
+      - "50051:50051"
+    container_name: argus-server
