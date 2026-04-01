@@ -11,11 +11,12 @@ import (
 
 type Handler struct {
 	proto.UnimplementedMetricServiceServer
-	store store.Store
+	agentStore  store.AgentStore
+	metricStore store.MetricStore
 }
 
-func NewHandler(store store.Store) *Handler {
-	return &Handler{store: store}
+func NewHandler(agentStore store.AgentStore, metricStore store.MetricStore) *Handler {
+	return &Handler{agentStore: agentStore, metricStore: metricStore}
 }
 
 func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) error {
@@ -23,7 +24,7 @@ func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) 
 
 	defer func() {
 		if agentID != "" {
-			if err := h.store.UnregisterAgent(agentID); err != nil {
+			if err := h.agentStore.UnregisterAgent(agentID); err != nil {
 				log.Printf("[%s] unregister error: %v", agentID, err)
 			}
 			log.Printf("[%s] disconnected", agentID)
@@ -44,7 +45,7 @@ func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) 
 
 		if agentID == "" {
 			agentID = payload.AgentId
-			if err := h.store.RegisterAgent(store.AgentInfo{
+			if err := h.agentStore.RegisterAgent(store.AgentInfo{
 				AgentMetadata: store.AgentMetadata{
 					AgentID:  payload.AgentId,
 					Hostname: payload.Hostname,
@@ -58,7 +59,7 @@ func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) 
 			log.Printf("[%s] connected (hostname: %s)", payload.AgentId, payload.Hostname)
 		}
 
-		if err := h.store.Save(store.Metric{
+		if err := h.metricStore.Save(store.Metric{
 			AgentMetadata: store.AgentMetadata{
 				AgentID:  payload.AgentId,
 				Hostname: payload.Hostname,
@@ -72,7 +73,7 @@ func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) 
 			continue
 		}
 
-		if err := h.store.UpdateLastSeen(payload.AgentId); err != nil {
+		if err := h.agentStore.UpdateLastSeen(payload.AgentId); err != nil {
 			log.Printf("[%s] update last seen error: %v", payload.AgentId, err)
 		}
 

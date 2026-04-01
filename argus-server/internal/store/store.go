@@ -22,11 +22,13 @@ type AgentInfo struct {
 	IsOnline    bool
 }
 
-type Store interface {
+type MetricStore interface {
 	Save(metrics Metric) error
 	GetByAgent(agentID string) []Metric
 	GetLatestMetric(agentID string) (*Metric, error)
+}
 
+type AgentStore interface {
 	RegisterAgent(info AgentInfo) error
 	UnregisterAgent(agentID string) error
 	UpdateLastSeen(agentID string) error

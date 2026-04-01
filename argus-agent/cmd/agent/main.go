@@ -10,16 +10,28 @@ import (
 )
 
 func main() {
-	serverAddr := os.Getenv("ARGUS_SERVER_ADDR")
-	if serverAddr == "" {
-		serverAddr = "localhost:50051"
-	}
+	serverAddr := resolveServerAddr()
+	runWithRetry(serverAddr)
+}
 
-	s, err := sender.New(serverAddr)
-	if err != nil {
-		log.Fatalf("failed to connect: %v", err)
-	}
+func runWithRetry(serverAddr string) {
+	for {
+		s, err := sender.New(serverAddr)
+		if err != nil {
+			log.Printf("연결 실패, 5초 후 재시도: %v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
 
+		log.Printf("서버 연결 성공: %s", serverAddr)
+
+		if err := run(s); err != nil {
+			log.Printf("스트림 에러, 재연결: %v", err)
+		}
+	}
+}
+
+func run(s *sender.GRPCSender) error {
 	collectors := []collector.Collector{
 		&collector.CPUCollector{},
 		&collector.MemCollector{},
@@ -51,7 +63,15 @@ func main() {
 		}
 
 		if err := s.Send(metrics); err != nil {
-			log.Printf("send error: %v", err)
+			return err
 		}
 	}
+	return nil
+}
+
+func resolveServerAddr() string {
+	if addr := os.Getenv("ARGUS_SERVER_ADDR"); addr != "" {
+		return addr
+	}
+	return "localhost:50051"
 }

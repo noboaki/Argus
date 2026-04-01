@@ -4,10 +4,12 @@ import (
 	"argus/proto"
 	"context"
 	"os"
+	"time"
 
 	"github.com/noboaki/argus-agent/internal/collector"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 )
 
 type GRPCSender struct {
@@ -16,8 +18,32 @@ type GRPCSender struct {
 	hostname string
 }
 
+func (s *GRPCSender) Send(metrics collector.Metrics) error {
+	payload := &proto.MetricPayload{
+		AgentId:   s.agentID,
+		Hostname:  s.hostname,
+		Timestamp: metrics.Timestamp.Unix(),
+		CpuUsage:  metrics.CPUUsage,
+		MemUsage:  metrics.MemUsage,
+		DiskUsage: metrics.DiskUsage,
+	}
+	return s.stream.Send(payload)
+}
+
+func (s *GRPCSender) AgentID() string {
+	return s.agentID
+}
+
 func New(serverAddr string) (*GRPCSender, error) {
-	conn, err := grpc.NewClient(serverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(
+		serverAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                time.Second * 10,
+			Timeout:             time.Second * 3,
+			PermitWithoutStream: true,
+		}),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -43,20 +69,4 @@ func resolveAgentID(hostname string) string {
 		return id
 	}
 	return hostname
-}
-
-func (s *GRPCSender) Send(metrics collector.Metrics) error {
-	payload := &proto.MetricPayload{
-		AgentId:   s.agentID,
-		Hostname:  s.hostname,
-		Timestamp: metrics.Timestamp.Unix(),
-		CpuUsage:  metrics.CPUUsage,
-		MemUsage:  metrics.MemUsage,
-		DiskUsage: metrics.DiskUsage,
-	}
-	return s.stream.Send(payload)
-}
-
-func (s *GRPCSender) AgentID() string {
-	return s.agentID
 }

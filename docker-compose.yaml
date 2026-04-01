@@ -1,18 +1,34 @@
-services:
-  argus-agent:
-    build:
-      context: .
-      dockerfile: argus-agent/Dockerfile
-    environment:
-      - ARGUS_SERVER_ADDR=argus-server:50051
-      - ARGUS_AGENT_ID=agent-local-1
-    depends_on:
-      - argus-server
-    container_name: argus-agent
-  argus-server:
-    build:
-      context: .
-      dockerfile: argus-server/Dockerfile
-    ports:
-      - "50051:50051"
-    container_name: argus-server
+  services:
+    argus-agent:
+      build:
+        context: .
+        dockerfile: argus-agent/Dockerfile
+      environment:
+        - ARGUS_SERVER_ADDR=argus-server:50051
+        - ARGUS_AGENT_ID=agent-local-1
+      depends_on:
+        - argus-server
+      container_name: argus-agent
+    argus-server:
+      build:
+        context: .
+        dockerfile: argus-server/Dockerfile
+      environment:
+        - ARGUS_SERVER_PORT=50051
+        - ARGUS_STORE_BACKEND=
+
+        # S3 | minIO
+#        - AWS_BUCKET=
+#        - AWS_REGION=
+#        - AWS_ACCESS_KEY_ID=
+#        - AWS_SECRET_ACCESS_KEY=
+#        - S3_ENDPOINT=
+
+        # InfluxDB
+#        - INFLUXDB_URL=
+#        - INFLUXDB_TOKEN=
+#        - INFLUXDB_ORG=
+#        - INFLUXDB_BUCKET=
+      ports:
+        - "50051:50051"
+      container_name: argus-server
