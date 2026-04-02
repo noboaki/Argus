@@ -4,20 +4,23 @@ package argus;
 
 option go_package = "argus/proto";
 
-service MetricService {
-  rpc StreamMetrics(stream MetricPayload) returns (Ack);
+service IngestionService {
+  rpc SendMetrics(stream MetricBatch) returns (Ack);
 }
 
-message MetricPayload {
-  string agent_id  = 1;
-  string hostname  = 2;
-  int64  timestamp = 3;  // Unix timestamp
-  double cpu_usage  = 4;
-  double mem_usage  = 5;
-  double disk_usage = 6;
+message Metric {
+  string name = 1;
+  double value = 2;
+  int64 timestamp = 3;
+  map<string,string> labels = 4;
+}
+
+message MetricBatch {
+  string agent_id = 1;
+  string hostname = 2;
+  repeated Metric metrics = 3;
 }
 
 message Ack {
-  bool   success = 1;
-  string message = 2;
+  bool success = 1;
 }

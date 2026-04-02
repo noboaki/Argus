@@ -31,9 +31,9 @@ func main() {
 			MaxConnectionIdle: 30 * time.Second,
 		}),
 	)
-	proto.RegisterMetricServiceServer(grpcServer, handler)
+	proto.RegisterIngestionServiceServer(grpcServer, handler)
 
-	lis, err := net.Listen("tcp", ":"+cfg.Port)
+	lis, err := net.Listen("tcp", cfg.Port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

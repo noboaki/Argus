@@ -2,7 +2,9 @@ package collector
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/noboaki/argus-agent/domain"
 	"github.com/shirou/gopsutil/v4/disk"
 )
 
@@ -10,7 +12,7 @@ type DiskCollector struct {
 	Path string
 }
 
-func (d *DiskCollector) Collect() (float64, error) {
+func (d *DiskCollector) Collect() (*domain.ArgusMetric, error) {
 	path := d.Path
 	if path == "" {
 		path = "/"
@@ -18,11 +20,12 @@ func (d *DiskCollector) Collect() (float64, error) {
 
 	stat, err := disk.Usage(path)
 	if err != nil {
-		return 0, fmt.Errorf("disk collect error: %v", err)
+		return nil, fmt.Errorf("disk collect error: %v", err)
 	}
-	return stat.UsedPercent, nil
-}
 
-func (d *DiskCollector) Name() string {
-	return "disk"
+	return &domain.ArgusMetric{
+		Name:      "disk",
+		Value:     stat.UsedPercent,
+		Timestamp: time.Now(),
+	}, nil
 }

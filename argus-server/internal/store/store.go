@@ -1,6 +1,9 @@
 package store
 
-import "time"
+import (
+	"argus/proto"
+	"time"
+)
 
 type AgentMetadata struct {
 	AgentID  string
@@ -23,9 +26,9 @@ type AgentInfo struct {
 }
 
 type MetricStore interface {
-	Save(metrics Metric) error
-	GetByAgent(agentID string) []Metric
-	GetLatestMetric(agentID string) (*Metric, error)
+	Save(*proto.MetricBatch) error
+	GetByAgent(agentID string) map[string][]*proto.Metric
+	GetLatestMetric(agentID, metricName string) (*proto.Metric, error)
 }
 
 type AgentStore interface {

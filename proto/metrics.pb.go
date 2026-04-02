@@ -21,32 +21,30 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type MetricPayload struct {
+type Metric struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	Hostname      string                 `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"` // Unix timestamp
-	CpuUsage      float64                `protobuf:"fixed64,4,opt,name=cpu_usage,json=cpuUsage,proto3" json:"cpu_usage,omitempty"`
-	MemUsage      float64                `protobuf:"fixed64,5,opt,name=mem_usage,json=memUsage,proto3" json:"mem_usage,omitempty"`
-	DiskUsage     float64                `protobuf:"fixed64,6,opt,name=disk_usage,json=diskUsage,proto3" json:"disk_usage,omitempty"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Value         float64                `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Labels        map[string]string      `protobuf:"bytes,4,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *MetricPayload) Reset() {
-	*x = MetricPayload{}
+func (x *Metric) Reset() {
+	*x = Metric{}
 	mi := &file_proto_metrics_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *MetricPayload) String() string {
+func (x *Metric) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MetricPayload) ProtoMessage() {}
+func (*Metric) ProtoMessage() {}
 
-func (x *MetricPayload) ProtoReflect() protoreflect.Message {
+func (x *Metric) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_metrics_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -58,64 +56,109 @@ func (x *MetricPayload) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use MetricPayload.ProtoReflect.Descriptor instead.
-func (*MetricPayload) Descriptor() ([]byte, []int) {
+// Deprecated: Use Metric.ProtoReflect.Descriptor instead.
+func (*Metric) Descriptor() ([]byte, []int) {
 	return file_proto_metrics_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *MetricPayload) GetAgentId() string {
+func (x *Metric) GetName() string {
 	if x != nil {
-		return x.AgentId
+		return x.Name
 	}
 	return ""
 }
 
-func (x *MetricPayload) GetHostname() string {
+func (x *Metric) GetValue() float64 {
 	if x != nil {
-		return x.Hostname
+		return x.Value
 	}
-	return ""
+	return 0
 }
 
-func (x *MetricPayload) GetTimestamp() int64 {
+func (x *Metric) GetTimestamp() int64 {
 	if x != nil {
 		return x.Timestamp
 	}
 	return 0
 }
 
-func (x *MetricPayload) GetCpuUsage() float64 {
+func (x *Metric) GetLabels() map[string]string {
 	if x != nil {
-		return x.CpuUsage
+		return x.Labels
 	}
-	return 0
+	return nil
 }
 
-func (x *MetricPayload) GetMemUsage() float64 {
-	if x != nil {
-		return x.MemUsage
-	}
-	return 0
+type MetricBatch struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	Hostname      string                 `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	Metrics       []*Metric              `protobuf:"bytes,3,rep,name=metrics,proto3" json:"metrics,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *MetricPayload) GetDiskUsage() float64 {
+func (x *MetricBatch) Reset() {
+	*x = MetricBatch{}
+	mi := &file_proto_metrics_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MetricBatch) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MetricBatch) ProtoMessage() {}
+
+func (x *MetricBatch) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_metrics_proto_msgTypes[1]
 	if x != nil {
-		return x.DiskUsage
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
 	}
-	return 0
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MetricBatch.ProtoReflect.Descriptor instead.
+func (*MetricBatch) Descriptor() ([]byte, []int) {
+	return file_proto_metrics_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *MetricBatch) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *MetricBatch) GetHostname() string {
+	if x != nil {
+		return x.Hostname
+	}
+	return ""
+}
+
+func (x *MetricBatch) GetMetrics() []*Metric {
+	if x != nil {
+		return x.Metrics
+	}
+	return nil
 }
 
 type Ack struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Ack) Reset() {
 	*x = Ack{}
-	mi := &file_proto_metrics_proto_msgTypes[1]
+	mi := &file_proto_metrics_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -127,7 +170,7 @@ func (x *Ack) String() string {
 func (*Ack) ProtoMessage() {}
 
 func (x *Ack) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_metrics_proto_msgTypes[1]
+	mi := &file_proto_metrics_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -140,7 +183,7 @@ func (x *Ack) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ack.ProtoReflect.Descriptor instead.
 func (*Ack) Descriptor() ([]byte, []int) {
-	return file_proto_metrics_proto_rawDescGZIP(), []int{1}
+	return file_proto_metrics_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Ack) GetSuccess() bool {
@@ -150,31 +193,27 @@ func (x *Ack) GetSuccess() bool {
 	return false
 }
 
-func (x *Ack) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
 var File_proto_metrics_proto protoreflect.FileDescriptor
 
 const file_proto_metrics_proto_rawDesc = "" +
 	"\n" +
-	"\x13proto/metrics.proto\x12\x05argus\"\xbd\x01\n" +
-	"\rMetricPayload\x12\x19\n" +
+	"\x13proto/metrics.proto\x12\x05argus\"\xbe\x01\n" +
+	"\x06Metric\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value\x12\x1c\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x121\n" +
+	"\x06labels\x18\x04 \x03(\v2\x19.argus.Metric.LabelsEntryR\x06labels\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"m\n" +
+	"\vMetricBatch\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x1a\n" +
-	"\bhostname\x18\x02 \x01(\tR\bhostname\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12\x1b\n" +
-	"\tcpu_usage\x18\x04 \x01(\x01R\bcpuUsage\x12\x1b\n" +
-	"\tmem_usage\x18\x05 \x01(\x01R\bmemUsage\x12\x1d\n" +
-	"\n" +
-	"disk_usage\x18\x06 \x01(\x01R\tdiskUsage\"9\n" +
+	"\bhostname\x18\x02 \x01(\tR\bhostname\x12'\n" +
+	"\ametrics\x18\x03 \x03(\v2\r.argus.MetricR\ametrics\"\x1f\n" +
 	"\x03Ack\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2D\n" +
-	"\rMetricService\x123\n" +
-	"\rStreamMetrics\x12\x14.argus.MetricPayload\x1a\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2C\n" +
+	"\x10IngestionService\x12/\n" +
+	"\vSendMetrics\x12\x12.argus.MetricBatch\x1a\n" +
 	".argus.Ack(\x01B\rZ\vargus/protob\x06proto3"
 
 var (
@@ -189,19 +228,23 @@ func file_proto_metrics_proto_rawDescGZIP() []byte {
 	return file_proto_metrics_proto_rawDescData
 }
 
-var file_proto_metrics_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_metrics_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_proto_metrics_proto_goTypes = []any{
-	(*MetricPayload)(nil), // 0: argus.MetricPayload
-	(*Ack)(nil),           // 1: argus.Ack
+	(*Metric)(nil),      // 0: argus.Metric
+	(*MetricBatch)(nil), // 1: argus.MetricBatch
+	(*Ack)(nil),         // 2: argus.Ack
+	nil,                 // 3: argus.Metric.LabelsEntry
 }
 var file_proto_metrics_proto_depIdxs = []int32{
-	0, // 0: argus.MetricService.StreamMetrics:input_type -> argus.MetricPayload
-	1, // 1: argus.MetricService.StreamMetrics:output_type -> argus.Ack
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	3, // 0: argus.Metric.labels:type_name -> argus.Metric.LabelsEntry
+	0, // 1: argus.MetricBatch.metrics:type_name -> argus.Metric
+	1, // 2: argus.IngestionService.SendMetrics:input_type -> argus.MetricBatch
+	2, // 3: argus.IngestionService.SendMetrics:output_type -> argus.Ack
+	3, // [3:4] is the sub-list for method output_type
+	2, // [2:3] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_metrics_proto_init() }
@@ -215,7 +258,7 @@ func file_proto_metrics_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_metrics_proto_rawDesc), len(file_proto_metrics_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

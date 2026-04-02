@@ -10,7 +10,7 @@ import (
 )
 
 type Handler struct {
-	proto.UnimplementedMetricServiceServer
+	proto.UnimplementedIngestionServiceServer
 	agentStore  store.AgentStore
 	metricStore store.MetricStore
 }
@@ -19,7 +19,7 @@ func NewHandler(agentStore store.AgentStore, metricStore store.MetricStore) *Han
 	return &Handler{agentStore: agentStore, metricStore: metricStore}
 }
 
-func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) error {
+func (h *Handler) SendMetrics(stream proto.IngestionService_SendMetricsServer) error {
 	var agentID string
 
 	defer func() {
@@ -59,30 +59,23 @@ func (h *Handler) StreamMetrics(stream proto.MetricService_StreamMetricsServer) 
 			log.Printf("[%s] connected (hostname: %s)", payload.AgentId, payload.Hostname)
 		}
 
-		if err := h.metricStore.Save(store.Metric{
-			AgentMetadata: store.AgentMetadata{
-				AgentID:  payload.AgentId,
-				Hostname: payload.Hostname,
-			},
-			Timestamp: time.Unix(payload.Timestamp, 0),
-			CPUUsage:  payload.CpuUsage,
-			MemUsage:  payload.MemUsage,
-			DiskUsage: payload.DiskUsage,
-		}); err != nil {
+		if err := h.metricStore.Save(payload); err != nil {
 			log.Printf("[%s] save error: %v", payload.AgentId, err)
-			continue
 		}
 
 		if err := h.agentStore.UpdateLastSeen(payload.AgentId); err != nil {
 			log.Printf("[%s] update last seen error: %v", payload.AgentId, err)
 		}
 
-		log.Printf("Agent_ID: [%s]  Hostname: [%s]  CPU: %.1f%%  MEM: %.1f%%  DISK: %.1f%%",
-			payload.AgentId,
-			payload.Hostname,
-			payload.CpuUsage,
-			payload.MemUsage,
-			payload.DiskUsage,
-		)
+		log.Printf("[%s] received %d metrics", payload.AgentId, len(payload.Metrics))
+
+		for _, m := range payload.Metrics {
+			log.Printf("  %-15s value=%.2f labels=%v timestamp=%s",
+				m.Name,
+				m.Value,
+				m.Labels,
+				time.Unix(m.Timestamp, 0).Format("15:04:05"),
+			)
+		}
 	}
 }

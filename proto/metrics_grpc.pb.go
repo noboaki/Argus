@@ -19,94 +19,94 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MetricService_StreamMetrics_FullMethodName = "/argus.MetricService/StreamMetrics"
+	IngestionService_SendMetrics_FullMethodName = "/argus.IngestionService/SendMetrics"
 )
 
-// MetricServiceClient is the client API for MetricService service.
+// IngestionServiceClient is the client API for IngestionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type MetricServiceClient interface {
-	StreamMetrics(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[MetricPayload, Ack], error)
+type IngestionServiceClient interface {
+	SendMetrics(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[MetricBatch, Ack], error)
 }
 
-type metricServiceClient struct {
+type ingestionServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewMetricServiceClient(cc grpc.ClientConnInterface) MetricServiceClient {
-	return &metricServiceClient{cc}
+func NewIngestionServiceClient(cc grpc.ClientConnInterface) IngestionServiceClient {
+	return &ingestionServiceClient{cc}
 }
 
-func (c *metricServiceClient) StreamMetrics(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[MetricPayload, Ack], error) {
+func (c *ingestionServiceClient) SendMetrics(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[MetricBatch, Ack], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &MetricService_ServiceDesc.Streams[0], MetricService_StreamMetrics_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &IngestionService_ServiceDesc.Streams[0], IngestionService_SendMetrics_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[MetricPayload, Ack]{ClientStream: stream}
+	x := &grpc.GenericClientStream[MetricBatch, Ack]{ClientStream: stream}
 	return x, nil
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type MetricService_StreamMetricsClient = grpc.ClientStreamingClient[MetricPayload, Ack]
+type IngestionService_SendMetricsClient = grpc.ClientStreamingClient[MetricBatch, Ack]
 
-// MetricServiceServer is the server API for MetricService service.
-// All implementations must embed UnimplementedMetricServiceServer
+// IngestionServiceServer is the server API for IngestionService service.
+// All implementations must embed UnimplementedIngestionServiceServer
 // for forward compatibility.
-type MetricServiceServer interface {
-	StreamMetrics(grpc.ClientStreamingServer[MetricPayload, Ack]) error
-	mustEmbedUnimplementedMetricServiceServer()
+type IngestionServiceServer interface {
+	SendMetrics(grpc.ClientStreamingServer[MetricBatch, Ack]) error
+	mustEmbedUnimplementedIngestionServiceServer()
 }
 
-// UnimplementedMetricServiceServer must be embedded to have
+// UnimplementedIngestionServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedMetricServiceServer struct{}
+type UnimplementedIngestionServiceServer struct{}
 
-func (UnimplementedMetricServiceServer) StreamMetrics(grpc.ClientStreamingServer[MetricPayload, Ack]) error {
-	return status.Error(codes.Unimplemented, "method StreamMetrics not implemented")
+func (UnimplementedIngestionServiceServer) SendMetrics(grpc.ClientStreamingServer[MetricBatch, Ack]) error {
+	return status.Error(codes.Unimplemented, "method SendMetrics not implemented")
 }
-func (UnimplementedMetricServiceServer) mustEmbedUnimplementedMetricServiceServer() {}
-func (UnimplementedMetricServiceServer) testEmbeddedByValue()                       {}
+func (UnimplementedIngestionServiceServer) mustEmbedUnimplementedIngestionServiceServer() {}
+func (UnimplementedIngestionServiceServer) testEmbeddedByValue()                          {}
 
-// UnsafeMetricServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to MetricServiceServer will
+// UnsafeIngestionServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to IngestionServiceServer will
 // result in compilation errors.
-type UnsafeMetricServiceServer interface {
-	mustEmbedUnimplementedMetricServiceServer()
+type UnsafeIngestionServiceServer interface {
+	mustEmbedUnimplementedIngestionServiceServer()
 }
 
-func RegisterMetricServiceServer(s grpc.ServiceRegistrar, srv MetricServiceServer) {
-	// If the following call panics, it indicates UnimplementedMetricServiceServer was
+func RegisterIngestionServiceServer(s grpc.ServiceRegistrar, srv IngestionServiceServer) {
+	// If the following call panics, it indicates UnimplementedIngestionServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&MetricService_ServiceDesc, srv)
+	s.RegisterService(&IngestionService_ServiceDesc, srv)
 }
 
-func _MetricService_StreamMetrics_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(MetricServiceServer).StreamMetrics(&grpc.GenericServerStream[MetricPayload, Ack]{ServerStream: stream})
+func _IngestionService_SendMetrics_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(IngestionServiceServer).SendMetrics(&grpc.GenericServerStream[MetricBatch, Ack]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type MetricService_StreamMetricsServer = grpc.ClientStreamingServer[MetricPayload, Ack]
+type IngestionService_SendMetricsServer = grpc.ClientStreamingServer[MetricBatch, Ack]
 
-// MetricService_ServiceDesc is the grpc.ServiceDesc for MetricService service.
+// IngestionService_ServiceDesc is the grpc.ServiceDesc for IngestionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var MetricService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "argus.MetricService",
-	HandlerType: (*MetricServiceServer)(nil),
+var IngestionService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "argus.IngestionService",
+	HandlerType: (*IngestionServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "StreamMetrics",
-			Handler:       _MetricService_StreamMetrics_Handler,
+			StreamName:    "SendMetrics",
+			Handler:       _IngestionService_SendMetrics_Handler,
 			ClientStreams: true,
 		},
 	},

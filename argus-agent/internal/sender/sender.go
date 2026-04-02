@@ -6,27 +6,37 @@ import (
 	"os"
 	"time"
 
-	"github.com/noboaki/argus-agent/internal/collector"
+	"github.com/noboaki/argus-agent/config"
+	"github.com/noboaki/argus-agent/domain"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 )
 
 type GRPCSender struct {
-	stream   proto.MetricService_StreamMetricsClient
+	stream   proto.IngestionService_SendMetricsClient
 	agentID  string
 	hostname string
 }
 
-func (s *GRPCSender) Send(metrics collector.Metrics) error {
-	payload := &proto.MetricPayload{
-		AgentId:   s.agentID,
-		Hostname:  s.hostname,
-		Timestamp: metrics.Timestamp.Unix(),
-		CpuUsage:  metrics.CPUUsage,
-		MemUsage:  metrics.MemUsage,
-		DiskUsage: metrics.DiskUsage,
+func (s *GRPCSender) Send(metrics []*domain.ArgusMetric) error {
+	var protoMetrics []*proto.Metric
+
+	for _, m := range metrics {
+		protoMetrics = append(protoMetrics, &proto.Metric{
+			Name:      m.Name,
+			Value:     m.Value,
+			Timestamp: m.Timestamp.Unix(),
+			Labels:    m.Labels,
+		})
 	}
+
+	payload := &proto.MetricBatch{
+		AgentId:  s.AgentID(),
+		Hostname: s.hostname,
+		Metrics:  protoMetrics,
+	}
+
 	return s.stream.Send(payload)
 }
 
@@ -34,9 +44,9 @@ func (s *GRPCSender) AgentID() string {
 	return s.agentID
 }
 
-func New(serverAddr string) (*GRPCSender, error) {
+func New(cfg *config.Config) (*GRPCSender, error) {
 	conn, err := grpc.NewClient(
-		serverAddr,
+		cfg.ArgusServerAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                time.Second * 10,
@@ -48,9 +58,9 @@ func New(serverAddr string) (*GRPCSender, error) {
 		return nil, err
 	}
 
-	client := proto.NewMetricServiceClient(conn)
+	client := proto.NewIngestionServiceClient(conn)
 
-	stream, err := client.StreamMetrics(context.Background())
+	stream, err := client.SendMetrics(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -59,14 +69,7 @@ func New(serverAddr string) (*GRPCSender, error) {
 
 	return &GRPCSender{
 		stream:   stream,
-		agentID:  resolveAgentID(hostname),
+		agentID:  cfg.ArgusAgentID,
 		hostname: hostname,
 	}, nil
-}
-
-func resolveAgentID(hostname string) string {
-	if id := os.Getenv("ARGUS_AGENT_ID"); id != "" {
-		return id
-	}
-	return hostname
 }

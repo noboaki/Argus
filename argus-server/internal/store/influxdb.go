@@ -1,7 +1,10 @@
 package store
 
 import (
+	"argus/proto"
 	"context"
+	"fmt"
+	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
@@ -21,24 +24,32 @@ func NewInfluxDBStore(url, token, org, bucket string) (*InfluxDBStore, error) {
 	}, nil
 }
 
-func (s *InfluxDBStore) Save(metrics Metric) error {
+func (s *InfluxDBStore) Save(batch *proto.MetricBatch) error {
 	writeAPI := s.client.WriteAPIBlocking(s.org, s.bucket)
 
-	point := influxdb2.NewPointWithMeasurement("metrics").
-		AddTag("agent_id", metrics.AgentID).
-		AddTag("hostname", metrics.Hostname).
-		AddField("cpu_usage", metrics.CPUUsage).
-		AddField("mem_usage", metrics.MemUsage).
-		AddField("disk_usage", metrics.DiskUsage).
-		SetTime(metrics.Timestamp)
+	for _, m := range batch.GetMetrics() {
+		point := influxdb2.NewPointWithMeasurement("metrics").
+			AddTag("agent_id", batch.AgentId).
+			AddTag("hostname", batch.Hostname).
+			AddField(m.Name, m.Value).
+			SetTime(time.Unix(m.Timestamp, 0))
 
-	return writeAPI.WritePoint(context.Background(), point)
-}
+		for k, v := range m.Labels {
+			point.AddTag(k, v)
+		}
 
-func (s *InfluxDBStore) GetByAgent(agentID string) []Metric {
+		if err := writeAPI.WritePoint(context.Background(), point); err != nil {
+			return fmt.Errorf("write point error (metric: %s): %w", m.Name, err)
+		}
+	}
+
 	return nil
 }
 
-func (s *InfluxDBStore) GetLatestMetric(agentID string) (*Metric, error) {
+func (s *InfluxDBStore) GetByAgent(agentID string) map[string][]*proto.Metric {
+	return nil
+}
+
+func (s *InfluxDBStore) GetLatestMetric(agentID, metricName string) (*proto.Metric, error) {
 	return nil, nil
 }

@@ -1,6 +1,10 @@
 package collector
 
-import "time"
+import (
+	"time"
+
+	"github.com/noboaki/argus-agent/domain"
+)
 
 type Metrics struct {
 	Timestamp time.Time
@@ -11,6 +15,5 @@ type Metrics struct {
 }
 
 type Collector interface {
-	Collect() (float64, error)
-	Name() string
+	Collect() (*domain.ArgusMetric, error)
 }

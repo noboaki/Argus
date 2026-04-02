@@ -1,6 +1,7 @@
 package store
 
 import (
+	"argus/proto"
 	"context"
 	"os"
 
@@ -42,14 +43,14 @@ func NewS3Store(bucket, region, endpoint, accessKey, secretAccessKey string) (*S
 	}, nil
 }
 
-func (s *S3Store) Save(metrics Metric) error {
+func (s *S3Store) Save(*proto.MetricBatch) error {
 	return nil
 }
 
-func (s *S3Store) GetByAgent(agentID string) []Metric {
+func (s *S3Store) GetByAgent(agentID string) map[string][]*proto.Metric {
 	return nil
 }
 
-func (s *S3Store) GetLatestMetric(agentID string) (*Metric, error) {
+func (s *S3Store) GetLatestMetric(agentID, metricName string) (*proto.Metric, error) {
 	return nil, nil
 }
