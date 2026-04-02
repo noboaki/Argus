@@ -178,7 +178,7 @@ fields:  {metric name} = {metric value}
 | `INFLUXDB_ORG` | - | InfluxDB Organization |
 | `INFLUXDB_BUCKET` | - | InfluxDB Bucket |
 | `AWS_BUCKET` | - | S3 / MinIO 버킷명 |
-| `AWS_REGION` | `us-east-1` | S3 / MinIO 리전 |
+| `AWS_REGION` | `ap-northeast-2` | S3 / MinIO 리전 |
 | `AWS_ACCESS_KEY_ID` | - | S3 / MinIO Access Key |
 | `AWS_SECRET_ACCESS_KEY` | - | S3 / MinIO Secret Key |
 | `S3_ENDPOINT` | - | MinIO 사용 시 엔드포인트. 없으면 AWS S3 |
