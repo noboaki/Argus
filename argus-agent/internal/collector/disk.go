@@ -11,7 +11,7 @@ type DiskCollector struct {
 	Path string
 }
 
-func (d *DiskCollector) Collect() (*domain.ArgusMetric, error) {
+func (d *DiskCollector) Collect() ([]*domain.ArgusMetric, error) {
 	path := d.Path
 	if path == "" {
 		path = "/"
@@ -22,5 +22,7 @@ func (d *DiskCollector) Collect() (*domain.ArgusMetric, error) {
 		return nil, fmt.Errorf("disk collect error: %v", err)
 	}
 
-	return domain.NewArgusMetric("disk", stat.UsedPercent), nil
+	return []*domain.ArgusMetric{
+		domain.NewArgusMetric("disk", stat.UsedPercent),
+	}, nil
 }

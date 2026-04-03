@@ -33,17 +33,21 @@ func (p *Pipeline) Run() error {
 	var metrics []*domain.ArgusMetric
 
 	for _, c := range p.collectors {
-		m, err := c.Collect()
+		ms, err := c.Collect()
 		if err != nil {
 			log.Printf("collect error: %v", err)
 			continue
 		}
-
-		for _, proc := range p.processors {
-			proc.Process(m)
+		if ms == nil { // 첫 수집 시 nil 반환 (network, disk_io)
+			continue
 		}
 
-		metrics = append(metrics, m)
+		for _, m := range ms {
+			for _, proc := range p.processors {
+				proc.Process(m)
+			}
+			metrics = append(metrics, m)
+		}
 	}
 
 	if len(metrics) == 0 {
@@ -66,6 +70,7 @@ func buildCollectors(names []string) []collector.Collector {
 			&collector.CPUCollector{},
 			&collector.MemCollector{},
 			&collector.DiskCollector{},
+			&collector.NetworkCollector{},
 		}
 	}
 

@@ -9,11 +9,13 @@ import (
 
 type MemCollector struct{}
 
-func (m *MemCollector) Collect() (*domain.ArgusMetric, error) {
+func (m *MemCollector) Collect() ([]*domain.ArgusMetric, error) {
 	stat, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, fmt.Errorf("memory collect error: %v", err)
 	}
 
-	return domain.NewArgusMetric("memory", stat.UsedPercent), nil
+	return []*domain.ArgusMetric{
+		domain.NewArgusMetric("memory", stat.UsedPercent),
+	}, nil
 }

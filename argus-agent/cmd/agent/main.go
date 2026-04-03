@@ -28,7 +28,7 @@ func runWithRetry() {
 
 		if err := run(s, cfg); err != nil {
 			log.Printf("스트림 에러, 재연결: %v", err)
-			time.Sleep(5 * time.Second)
+			time.Sleep(cfg.Interval)
 		}
 	}
 }

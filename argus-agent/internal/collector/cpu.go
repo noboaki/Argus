@@ -10,11 +10,13 @@ import (
 
 type CPUCollector struct{}
 
-func (c *CPUCollector) Collect() (*domain.ArgusMetric, error) {
+func (c *CPUCollector) Collect() ([]*domain.ArgusMetric, error) {
 	cpuUsage, err := cpu.Percent(time.Second, false)
 	if err != nil {
 		return nil, fmt.Errorf("cpu collect error: %v", err)
 	}
 
-	return domain.NewArgusMetric("cpu", cpuUsage[0]), nil
+	return []*domain.ArgusMetric{
+		domain.NewArgusMetric("cpu", cpuUsage[0]),
+	}, nil
 }

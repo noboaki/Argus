@@ -19,3 +19,13 @@ func NewArgusMetric(name string, value float64) *ArgusMetric {
 		Labels:    make(Labels),
 	}
 }
+
+func (m *ArgusMetric) WithLabels(labels Labels) *ArgusMetric {
+	m.Labels.Merge(labels)
+	return m
+}
+
+func (m *ArgusMetric) WithTimestamp(t time.Time) *ArgusMetric {
+	m.Timestamp = t
+	return m
+}

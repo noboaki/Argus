@@ -5,5 +5,5 @@ import (
 )
 
 type Collector interface {
-	Collect() (*domain.ArgusMetric, error)
+	Collect() ([]*domain.ArgusMetric, error)
 }
