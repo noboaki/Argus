@@ -2,7 +2,6 @@ package collector
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/noboaki/argus-agent/domain"
 	"github.com/shirou/gopsutil/v4/disk"
@@ -23,9 +22,5 @@ func (d *DiskCollector) Collect() (*domain.ArgusMetric, error) {
 		return nil, fmt.Errorf("disk collect error: %v", err)
 	}
 
-	return &domain.ArgusMetric{
-		Name:      "disk",
-		Value:     stat.UsedPercent,
-		Timestamp: time.Now(),
-	}, nil
+	return domain.NewArgusMetric("disk", stat.UsedPercent), nil
 }

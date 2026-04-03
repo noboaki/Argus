@@ -16,9 +16,5 @@ func (c *CPUCollector) Collect() (*domain.ArgusMetric, error) {
 		return nil, fmt.Errorf("cpu collect error: %v", err)
 	}
 
-	return &domain.ArgusMetric{
-		Name:      "cpu",
-		Value:     cpuUsage[0],
-		Timestamp: time.Now(),
-	}, nil
+	return domain.NewArgusMetric("cpu", cpuUsage[0]), nil
 }

@@ -2,7 +2,6 @@ package collector
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/noboaki/argus-agent/domain"
 	"github.com/shirou/gopsutil/v4/mem"
@@ -16,9 +15,5 @@ func (m *MemCollector) Collect() (*domain.ArgusMetric, error) {
 		return nil, fmt.Errorf("memory collect error: %v", err)
 	}
 
-	return &domain.ArgusMetric{
-		Name:      "memory",
-		Value:     stat.UsedPercent,
-		Timestamp: time.Now(),
-	}, nil
+	return domain.NewArgusMetric("memory", stat.UsedPercent), nil
 }

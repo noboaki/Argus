@@ -1,34 +1,54 @@
-  services:
-    argus-agent:
-      build:
-        context: .
-        dockerfile: argus-agent/Dockerfile
-      environment:
-        - ARGUS_SERVER_ADDR=argus-server:50051
-        - ARGUS_AGENT_ID=agent-local-1
-      depends_on:
-        - argus-server
-      container_name: argus-agent
-    argus-server:
-      build:
-        context: .
-        dockerfile: argus-server/Dockerfile
-      environment:
-        - ARGUS_SERVER_PORT=50051
-        - ARGUS_STORE_BACKEND=
+services:
+  argus-agent:
+    build:
+      context: .
+      dockerfile: argus-agent/Dockerfile
+    environment:
+      - ARGUS_SERVER_ADDR=argus-server:50051
+      - ARGUS_AGENT_ID=agent-local-1
+      - 'LABELS={"env":"dev","os":"linux","runtime":"docker"}'
+    depends_on:
+      - argus-server
+    container_name: argus-agent
+  argus-server:
+    build:
+      context: .
+      dockerfile: argus-server/Dockerfile
+    environment:
+      - ARGUS_SERVER_PORT=50051
+      - ARGUS_STORE_BACKEND=influxdb
 
-        # S3 | minIO
-#        - AWS_BUCKET=
-#        - AWS_REGION=
-#        - AWS_ACCESS_KEY_ID=
-#        - AWS_SECRET_ACCESS_KEY=
-#        - S3_ENDPOINT=
+      # S3 | minIO
+      #        - AWS_BUCKET=
+      #        - AWS_REGION=
+      #        - AWS_ACCESS_KEY_ID=
+      #        - AWS_SECRET_ACCESS_KEY=
+      #        - S3_ENDPOINT=
 
-        # InfluxDB
-#        - INFLUXDB_URL=
-#        - INFLUXDB_TOKEN=
-#        - INFLUXDB_ORG=
-#        - INFLUXDB_BUCKET=
-      ports:
-        - "50051:50051"
-      container_name: argus-server
+      # InfluxDB
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=
+      - INFLUXDB_ORG=
+      - INFLUXDB_BUCKET=
+    depends_on:
+      - influxdb
+    ports:
+      - "50051:50051"
+    container_name: argus-server
+  influxdb:
+    image: influxdb:2
+    container_name: influxdb
+    ports:
+      - 8086:8086
+      - 8085:8088
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=
+      - DOCKER_INFLUXDB_INIT_PASSWORD=
+      - DOCKER_INFLUXDB_INIT_ORG=
+      - DOCKER_INFLUXDB_INIT_BUCKET=
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=
+    volumes:
+      - influxdb_data:/bitnami/influxdb
+volumes:
+  influxdb_data:
