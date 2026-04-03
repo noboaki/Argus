@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"github.com/noboaki/argus-agent/config"
-	"github.com/noboaki/argus-agent/domain"
-	"github.com/noboaki/argus-agent/internal/collector"
-	"github.com/noboaki/argus-agent/internal/processor"
+	"github.com/noboaki/argus-agent/internal/pipeline"
 	"github.com/noboaki/argus-agent/internal/sender"
 )
 
@@ -36,41 +34,21 @@ func runWithRetry() {
 }
 
 func run(s *sender.GRPCSender, cfg *config.Config) error {
-	collectors := []collector.Collector{
-		&collector.CPUCollector{},
-		&collector.MemCollector{},
-		&collector.DiskCollector{},
-	}
+	p := pipeline.NewPipeline(
+		cfg.Collectors,
+		cfg.Processors,
+		s,
+		cfg.Labels,
+	)
 
-	processors := []processor.Processor{
-		processor.NewSimpleProcessor(cfg.Labels),
-	}
-
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(cfg.Interval)
 	defer ticker.Stop()
 
-	log.Printf("Argus Agent %s started. Collecting Metrics every 5s...", s.AgentID())
+	log.Printf("Argus Agent %s started.", s.AgentID())
 
 	for range ticker.C {
-		var metrics []*domain.ArgusMetric
-
-		for _, c := range collectors {
-			m, err := c.Collect()
-			if err != nil {
-				log.Printf("[%s] error: %v", m.Name, err)
-				continue
-			}
-
-			for _, p := range processors {
-				p.Process(m)
-			}
-
-			metrics = append(metrics, m)
-		}
-
-		if err := s.Send(metrics); err != nil {
-			log.Printf("Send 에러 상세: %v (type: %T)", err, err)
-			return err
+		if err := p.Run(); err != nil {
+			return err // Send 에러 시 재연결
 		}
 	}
 	return nil
