@@ -3,12 +3,14 @@ package sender
 import (
 	"argus/proto"
 	"context"
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/noboaki/argus-agent/config"
 	"github.com/noboaki/argus-agent/domain"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 )
@@ -45,14 +47,27 @@ func (s *GRPCSender) AgentID() string {
 }
 
 func New(cfg *config.Config) (*GRPCSender, error) {
-	conn, err := grpc.NewClient(
-		cfg.ArgusServerAddr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	opts := []grpc.DialOption{
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                time.Second * 10,
 			Timeout:             time.Second * 3,
 			PermitWithoutStream: true,
 		}),
+	}
+
+	if cfg.TLSEnabled == "true" {
+		cred, err := credentials.NewClientTLSFromFile(cfg.TLSCAFile, "")
+		if err != nil {
+			return nil, fmt.Errorf("TLS 로드 실패: %w", err)
+		}
+		opts = append(opts, grpc.WithTransportCredentials(cred))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
+	conn, err := grpc.NewClient(
+		cfg.ArgusServerAddr,
+		opts...,
 	)
 	if err != nil {
 		return nil, err

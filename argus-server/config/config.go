@@ -19,6 +19,11 @@ type Config struct {
 	S3Endpoint   string
 	AWSAccessKey string
 	AWSSecretKey string
+
+	// TLS
+	TLSEnabled  string
+	TLSCertFile string
+	TLSKeyFile  string
 }
 
 func Load() *Config {
@@ -41,6 +46,11 @@ func Load() *Config {
 		S3Endpoint:   os.Getenv("S3_ENDPOINT"),
 		AWSAccessKey: os.Getenv("AWS_ACCESS_KEY_ID"),
 		AWSSecretKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
+
+		// TLS
+		TLSEnabled:  getOrDefault("ARGUS_TLS_ENABLED", "false"),
+		TLSCertFile: os.Getenv("ARGUS_TLS_CERT_FILE"),
+		TLSKeyFile:  os.Getenv("ARGUS_TLS_KEY_FILE"),
 	}
 }
 

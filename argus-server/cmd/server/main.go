@@ -10,6 +10,7 @@ import (
 	grpcHandler "github.com/noboaki/argus-server/internal/grpc"
 	"github.com/noboaki/argus-server/internal/store"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 )
 
@@ -25,11 +26,27 @@ func main() {
 
 	handler := grpcHandler.NewHandler(agentStore, metricStore)
 
-	grpcServer := grpc.NewServer(
+	opts := []grpc.ServerOption{
 		grpc.MaxConcurrentStreams(1000),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
 			MaxConnectionIdle: 30 * time.Second,
 		}),
+	}
+
+	if cfg.TLSEnabled == "true" {
+		cred, err := credentials.NewServerTLSFromFile(cfg.TLSCertFile, cfg.TLSKeyFile)
+		if err != nil {
+			log.Fatalf("TLS 로드 실패: %v", err)
+		}
+
+		opts = append(opts, grpc.Creds(cred))
+		log.Println("TLS 활성화")
+	} else {
+		log.Println("TLS 비활성화 (insecure)")
+	}
+
+	grpcServer := grpc.NewServer(
+		opts...,
 	)
 	proto.RegisterIngestionServiceServer(grpcServer, handler)
 

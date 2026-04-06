@@ -15,6 +15,8 @@ type Config struct {
 	Processors      []string
 	ArgusServerAddr string
 	ArgusAgentID    string
+	TLSEnabled      string
+	TLSCAFile       string
 	Interval        time.Duration
 	Labels          domain.Labels
 }
@@ -41,6 +43,8 @@ func Load() *Config {
 		Processors:      processors,
 		ArgusServerAddr: getOrDefault("ARGUS_SERVER_ADDR", "localhost:50051"),
 		ArgusAgentID:    getOrDefault("ARGUS_AGENT_ID", hostname),
+		TLSEnabled:      getOrDefault("ARGUS_TLS_ENABLED", "false"),
+		TLSCAFile:       os.Getenv("ARGUS_TLS_CA_FILE"),
 		Interval:        loadInterval(),
 		Labels:          labels,
 	}
